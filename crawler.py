@@ -20,7 +20,7 @@
 
 import urllib2
 import urlparse
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, element
 from collections import defaultdict
 import re
 
@@ -240,7 +240,7 @@ class crawler(object):
     def _text_of(self, elem):
 
         """Get the text inside some element without any tags."""
-        if isinstance(elem, Tag):
+        if isinstance(elem, element.Tag):
             text = []
             for sub_elem in elem:
                 text.append(self._text_of(sub_elem))
@@ -269,7 +269,7 @@ class crawler(object):
             tag = tag.next
 
             # html tag
-            if isinstance(tag, Tag):
+            if isinstance(tag, element.Tag):
 
                 if tag.parent != stack[-1]:
                     self._exit[stack[-1].name.lower()](stack[-1])
