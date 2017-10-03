@@ -51,6 +51,11 @@ class crawler(object):
         self._doc_id_cache = {}
         self._word_id_cache = {}
 
+        #Inverted index storing word id matches to lists of document ids
+        self._inverted_index = {}
+        self._lexicon = {}
+        self._document_list = {}
+
         # functions to call when entering and exiting specific tags
         self._enter = defaultdict(lambda *a, **ka: self._visit_ignore)
         self._exit = defaultdict(lambda *a, **ka: self._visit_ignore)
@@ -104,8 +109,8 @@ class crawler(object):
         ])
 
         # TODO remove me in real version
-        self._mock_next_doc_id = 1
-        self._mock_next_word_id = 1
+        self._next_doc_id = 1
+        self._next_word_id = 1
 
         # keep track of some info about the page we are currently parsing
         self._curr_depth = 0
@@ -124,33 +129,39 @@ class crawler(object):
 
     # TODO remove me in real version
     def _mock_insert_document(self, url):
-        """A function that pretends to insert a url into a document db table
-        and then returns that newly inserted document's id."""
-        ret_id = self._mock_next_doc_id
-        self._mock_next_doc_id += 1
+
+        ret_id = self._next_doc_id
+        self._document_list[ret_id] = url
+        self._next_doc_id += 1
         return ret_id
 
-    # TODO remove me in real version
-    def _mock_insert_word(self, word):
-        """A function that pretends to inster a word into the lexicon db table
-        and then returns that newly inserted word's id."""
-        ret_id = self._mock_next_word_id
-        self._mock_next_word_id += 1
-        return ret_id
+    # Insert a word into the inverted index
+    def insert_word(self, word_id):
+        if word_id in self._inverted_index:
+            #Word exists, finding word location and appending new doc ID
+            self._inverted_index[word_id].add(self._curr_doc_id)
+
+            #print "Word Found: ",word_id, self._inverted_index[word_id]
+
+        else:
+            #Adding a list of doc IDs to inverted index
+            self._inverted_index[word_id] = set([self._curr_doc_id])
+            #print "Added word: ", word_id
+
+        return
 
     def word_id(self, word):
         """Get the word id of some specific word."""
         if word in self._word_id_cache:
+            self.insert_word(self._word_id_cache[word])
             return self._word_id_cache[word]
-
-        # TODO: 1) add the word to the lexicon, if that fails, then the
-        #          word is in the lexicon
-        #       2) query the lexicon for the id assigned to this word,
-        #          store it in the word id cache, and return the id.
-
-        word_id = self._mock_insert_word(word)
-        self._word_id_cache[word] = word_id
-        return word_id
+        else:
+            word_id = self._next_word_id
+            self._next_word_id += 1
+            self._lexicon[word_id] = word.encode("utf-8")
+            self._word_id_cache[word] = word_id
+            self.insert_word(word_id)
+            return word_id
 
     def document_id(self, url):
         """Get the document id for some url."""
@@ -213,6 +224,7 @@ class crawler(object):
         # TODO: knowing self._curr_doc_id and the list of all words and their
         #       font sizes (in self._curr_words), add all the words into the
         #       database for this document
+
         print "    num words=" + str(len(self._curr_words))
 
     def _increase_font_factor(self, factor):
@@ -232,6 +244,7 @@ class crawler(object):
         into the self._curr_words list for later processing."""
         words = WORD_SEPARATORS.split(elem.string.lower())
         for word in words:
+
             word = word.strip()
             if word in self._ignored_words:
                 continue
@@ -339,10 +352,23 @@ class crawler(object):
                     socket.close()
 
     def get_inverted_index(self):
-        return "test1"
+
+        return self._inverted_index
 
     def get_resovled_inverted_index(self):
-        return "test2"
+        resolved_inv_index = {}
+        #Extracting key and value from inverted index
+        for wordID,pageSet in self._inverted_index.iteritems():
+            url_list = []
+            #Creating URL list
+            for page in pageSet:
+                url_list.append(self._document_list[page])
+
+            resolved_inv_index[self._lexicon[wordID]] = set(url_list)
+
+
+
+        return resolved_inv_index
 
 
 if __name__ == "__main__":
