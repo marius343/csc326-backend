@@ -20,6 +20,7 @@
 
 import urllib2
 import urlparse
+import pagerank
 from bs4 import BeautifulSoup, element
 from collections import defaultdict
 import re
@@ -50,6 +51,10 @@ class crawler(object):
         self._url_queue = []
         self._doc_id_cache = {}
         self._word_id_cache = {}
+
+        #For pagerank algorithm
+        self._url_pairs = []
+        self._page_rank = {}
 
         #Inverted index storing word id matches to lists of document ids
         self._inverted_index = {}
@@ -127,7 +132,7 @@ class crawler(object):
         except IOError:
             pass
 
-    # TODO remove me in real version
+
     def _mock_insert_document(self, url):
 
         ret_id = self._next_doc_id
@@ -190,9 +195,8 @@ class crawler(object):
         return urlparse.urljoin(parsed_url.geturl(), rel)
 
     def add_link(self, from_doc_id, to_doc_id):
-        """Add a link into the database, or increase the number of links between
-        two pages in the database."""
-        # TODO
+        self._url_pairs.append((from_doc_id, to_doc_id))
+
 
     def _visit_title(self, elem):
         """Called when visiting the <title> tag."""
@@ -350,6 +354,9 @@ class crawler(object):
             finally:
                 if socket:
                     socket.close()
+
+        self._page_rank =pagerank.page_rank(self._url_pairs)
+        print self._page_rank
 
     def get_inverted_index(self):
 

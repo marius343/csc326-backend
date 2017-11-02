@@ -18,7 +18,7 @@ theServer.authorize_security_group(group_name ="engineSecurity", ip_protocol="tc
 theServer.authorize_security_group(group_name ="engineSecurity", ip_protocol="tcp", from_port=80, to_port=80, cidr_ip ="0.0.0.0/0")
 
 #starting micro instance of ubuntu
-instances = theServer.run_instances(image_id="ami-88aa1ce0", key_name='engineKey')
+instances = theServer.run_instances(image_id="ami-cd0f5cb6", key_name='engineKey')
 
 # Wait a minute or two while it boots
 running = 0
