@@ -33,5 +33,5 @@ def page_rank(links, num_iterations=20, initial_pr=10):
 
 
 if __name__ == "__main__":
-    print page_rank([(1, 2), (1, 4), (5, 1), (6,1), (7,1)])
+    print page_rank([(1, 2), (1, 4), (4,3), (4,5), (4,9), (4,2)])
     #print page_rank([(1, 2), (2, 4), (4, 3), (3, 1), (3, 2)])

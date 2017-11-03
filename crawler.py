@@ -57,7 +57,7 @@ class crawler(object):
         self._page_rank = {}
 
         #Inverted index storing word id matches to lists of document ids
-        self._inverted_index = {}
+        self._inverted_index = {} #NOTE: format of inverted index is {wordID: [list of [docID, wordCount]], ...}
         self._lexicon = {}
         self._document_list = {}
 
@@ -143,14 +143,18 @@ class crawler(object):
     # Insert a word into the inverted index
     def insert_word(self, word_id):
         if word_id in self._inverted_index:
-            #Word exists, finding word location and appending new doc ID
-            self._inverted_index[word_id].add(self._curr_doc_id)
+            #Word exists, finding word location and appending new doc ID, also increment word counter
+            docFound = 0
+            for doc in self._inverted_index[word_id]:
+                if doc[0] == self._curr_doc_id:
+                    docFound = 1
+                    doc[1] += 1
 
-            #print "Word Found: ",word_id, self._inverted_index[word_id]
-
+            if docFound == 0:
+                self._inverted_index[word_id].append([self._curr_doc_id, 1])
         else:
             #Adding a list of doc IDs to inverted index
-            self._inverted_index[word_id] = set([self._curr_doc_id])
+            self._inverted_index[word_id] = [[self._curr_doc_id, 1]]
             #print "Added word: ", word_id
 
         return
@@ -355,21 +359,31 @@ class crawler(object):
                 if socket:
                     socket.close()
 
-        self._page_rank =pagerank.page_rank(self._url_pairs)
-        print self._page_rank
-
+    #NOTE: format of inverted index is {wordID: [list of [docID, wordCount]], ...}
     def get_inverted_index(self):
 
         return self._inverted_index
 
-    def get_resovled_inverted_index(self):
+    def get_raw_page_rank(self):
+        self._page_rank = pagerank.page_rank(self._url_pairs)
+        return self._page_rank
+
+    #Returns inverted index with URLs. Can also take in a modified inverted index to convert,
+    #as long as the IDs refrenced are the ones used in the crawler object
+    def get_resovled_inverted_index(self, inputList={}):
+
+        if(len(inputList) == 0):
+            temp_invertedIndex = self._inverted_index
+        else:
+            temp_invertedIndex = inputList
+
         resolved_inv_index = {}
         #Extracting key and value from inverted index
-        for wordID,pageSet in self._inverted_index.iteritems():
+        for wordID,pageSet in temp_invertedIndex.iteritems():
             url_list = []
             #Creating URL list
             for page in pageSet:
-                url_list.append(self._document_list[page])
+                url_list.append(self._document_list[page[0]])
 
             resolved_inv_index[self._lexicon[wordID]] = set(url_list)
 
