@@ -21,6 +21,8 @@
 import urllib2
 import urlparse
 import pagerank
+import redis
+import pickle
 from bs4 import BeautifulSoup, element
 from collections import defaultdict
 import re
@@ -136,7 +138,7 @@ class crawler(object):
     def _mock_insert_document(self, url):
 
         ret_id = self._next_doc_id
-        self._document_list[ret_id] = url
+        self._document_list[self._next_doc_id] = url
         self._next_doc_id += 1
         return ret_id
 
@@ -160,6 +162,8 @@ class crawler(object):
         return
 
     def word_id(self, word):
+
+
         """Get the word id of some specific word."""
         if word in self._word_id_cache:
             self.insert_word(self._word_id_cache[word])
@@ -318,6 +322,8 @@ class crawler(object):
                 self._add_text(tag)
 
     def crawl(self, depth=2, timeout=3):
+
+        print self.load_state()
         """Crawl the web!"""
         seen = set()
 
@@ -361,8 +367,10 @@ class crawler(object):
 
     #NOTE: format of inverted index is {wordID: [list of [docID, wordCount]], ...}
     def get_inverted_index(self):
-
         return self._inverted_index
+
+    def get_doc_list(self):
+        return self._document_list
 
     def get_raw_page_rank(self):
         self._page_rank = pagerank.page_rank(self._url_pairs)
@@ -383,14 +391,39 @@ class crawler(object):
             url_list = []
             #Creating URL list
             for page in pageSet:
-                url_list.append(self._document_list[page[0]])
+                url_list.append((self._document_list[page[0]], page[1]))
 
-            resolved_inv_index[self._lexicon[wordID]] = set(url_list)
-
-
+            resolved_inv_index[self._lexicon[wordID]] = url_list
 
         return resolved_inv_index
 
+    #Used for saving crawler data structures into database
+    def save_state(self):
+        return
+        database = redis.Redis("localhost")
+        database.flushall()
+
+        database["next_doc_id"] = self._next_doc_id
+        database["next_word_id "] = self._next_word_id
+
+
+        self._doc_id_cache = {}
+        self._word_id_cache = {}
+
+        # For pagerank algorithm
+        self._url_pairs = []
+        self._page_rank = {}
+
+        # Inverted index storing word id matches to lists of document ids
+        self._inverted_index = {}  # NOTE: format of inverted index is {wordID: [list of [docID, wordCount]], ...}
+        self._lexicon = {}
+        self._document_list = {}
+
+        return "Success: crawler state saved"
+
+    def load_state(self):
+
+        return "Success: crawler state loaded"
 
 if __name__ == "__main__":
     bot = crawler(None, "urls.txt")

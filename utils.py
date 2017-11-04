@@ -1,4 +1,7 @@
 import operator
+import redis
+
+databaseIP = "localhost"
 
 #Normalizes data on a scale of 0 to 100 by finding max and min and adjusting accordingly
 #Can take in a dictionary or a list
@@ -44,7 +47,6 @@ def sort_data(inverted_index, page_rank = {}):
             if isinstance(page_rank, dict) and len(page_rank) > 1:
                 for page in inverted_index[word]:
                     page[1] = 0.5 * page[1] + 0.5* page_rank.get(page[0], 0)
-
                     inverted_index[word] = sorted(inverted_index[word], key=operator.itemgetter(1), reverse=True)
 
         return inverted_index
@@ -56,3 +58,26 @@ def sort_data(inverted_index, page_rank = {}):
         return {}
 
 
+def make_pagerank_pretty(page_rank, doc_list):
+    pretty_page_rank = [(doc_list[k], v) for k, v in page_rank.iteritems()]
+
+    pretty_page_rank = sorted(pretty_page_rank, key=operator.itemgetter(1))
+
+    return pretty_page_rank
+
+def add_to_database(invertedIndex):
+    database = redis.Redis(databaseIP)
+    database.flushall()
+
+
+    if isinstance(invertedIndex, dict):
+        for word in invertedIndex:
+            for url in invertedIndex[word]:
+                database.zadd(word, url[0], url[1])
+    else:
+        print "Error: cannot add specified data structure to database"
+
+    return
+
+if __name__ == "__main__":
+    add_to_database("blah")

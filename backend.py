@@ -1,15 +1,18 @@
 from crawler import crawler
 import utils
+import pprint
 
-bot = crawler(None, "urls.txt")
-bot.crawl(depth=1)
+pp = pprint.PrettyPrinter(indent=1, width=100)
 
-print "\n\nRESULTS:\n"
+bot = crawler(None, "urls1.txt")
+bot.crawl(depth=0)
 
 #First we run the crawler on the given URLs and the page rank algorithm
 inverted_index = bot.get_inverted_index()
 
 page_rank = bot.get_raw_page_rank()
+pretty_page_rank = utils.make_pagerank_pretty(page_rank, bot.get_doc_list())
+#pp.pprint(pretty_page_rank)
 
 #The page rank and word counts need to be normalized in order to combine them
 #and get the importance of each given page for each given keyword
@@ -22,6 +25,9 @@ sorted_inverted_index = utils.sort_data(normalized_inverted_index, normalized_pa
 
 resolved_inverted_index = bot.get_resovled_inverted_index(sorted_inverted_index)
 
-#Store the inverted index in a database
-print sorted_inverted_index
+#Store the inverted index in a database (this is what the front-end will access)
+
+utils.add_to_database(resolved_inverted_index)
 print resolved_inverted_index
+
+#Save the crawler state in a database for future use
