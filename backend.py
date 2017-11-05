@@ -4,8 +4,8 @@ import pprint
 
 pp = pprint.PrettyPrinter(indent=1, width=100)
 
-bot = crawler(None, "urls1.txt")
-bot.crawl(depth=0)
+bot = crawler(None, "urls2.txt")
+bot.crawl(depth=1)
 
 #First we run the crawler on the given URLs and the page rank algorithm
 inverted_index = bot.get_inverted_index()
@@ -16,18 +16,17 @@ pretty_page_rank = utils.make_pagerank_pretty(page_rank, bot.get_doc_list())
 
 #The page rank and word counts need to be normalized in order to combine them
 #and get the importance of each given page for each given keyword
-normalized_page_rank = utils.normalize_data(page_rank)
+#normalized_page_rank = utils.normalize_data(page_rank)
 
-normalized_inverted_index = utils.normalize_data(inverted_index)
+#normalized_inverted_index = utils.normalize_data(inverted_index)
 
 #Sorting the inverted index URL lists based on importance and resolving the inverted index
-sorted_inverted_index = utils.sort_data(normalized_inverted_index, normalized_page_rank)
+#sorted_inverted_index = utils.sort_data(normalized_inverted_index, normalized_page_rank)
 
-resolved_inverted_index = bot.get_resovled_inverted_index(sorted_inverted_index)
+resolved_inverted_index = bot.get_resovled_inverted_index()
 
-#Store the inverted index in a database (this is what the front-end will access)
-
-utils.add_to_database(resolved_inverted_index)
 print resolved_inverted_index
 
-#Save the crawler state in a database for future use
+#Store the inverted index in a database (this is what the front-end will access)
+#utils.add_to_frontend_database(resolved_inverted_index)
+utils.add_to_backend_database(bot.get_doc_list(), page_rank, bot.get_last_doc_id())
