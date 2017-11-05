@@ -1,4 +1,14 @@
 http://www.eecg.toronto.edu
+http://www.eecg.toronto.edu/~exec/student_guide/Main/index.shtml
+http://www.eecg.toronto.edu/~exec/thesis_lib/
+http://www.eecg.toronto.edu/tech_reports/index.html
+http://www.eecg.toronto.edu/projects.html
+http://www.eecg.toronto.edu/facilities.html
+http://www.eecg.toronto.edu/grads.html
+http://www.eecg.toronto.edu/faculty.html
+http://www.utoronto.ca
+http://www.ece.utoronto.ca
+http://www.eecg.toronto.edu/Welcome.html
 http://Google.com
 http://Youtube.com
 http://Facebook.com

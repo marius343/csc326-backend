@@ -379,7 +379,7 @@ class crawler(object):
         return self._document_list
 
     def get_raw_page_rank(self):
-        self._page_rank = pagerank.page_rank(self._url_pairs)
+        if len(self._url_pairs) > 0: self._page_rank = pagerank.page_rank(self._url_pairs)
         return self._page_rank
 
     #Returns inverted index with URLs. Can also take in a modified inverted index to convert,
