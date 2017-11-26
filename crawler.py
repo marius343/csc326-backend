@@ -52,7 +52,7 @@ class crawler(object):
         and with the file containing the list of seed URLs to begin indexing."""
         self._url_queue = []
         self._doc_id_cache = {}
-        self._word_id_cache = {}
+        self._word_id_cache = {} #Key is word ID value is a tuple word ('word', global count)
 
         #For pagerank algorithm
         self._url_pairs = []
@@ -153,7 +153,7 @@ class crawler(object):
         return ret_id
 
     # Insert a word into the inverted index
-    def insert_word(self, word_id):
+    def update_word(self, word_id):
         if word_id in self._inverted_index:
             #Word exists, finding word location and appending new doc ID, also increment word counter
             docFound = 0
@@ -172,18 +172,20 @@ class crawler(object):
         return
 
     def word_id(self, word):
-
-
-        """Get the word id of some specific word."""
+        #If a word exists, update its local (current page) and global counts
+        #If it does not exist, add it and set default values
         if word in self._word_id_cache:
-            self.insert_word(self._word_id_cache[word])
-            return self._word_id_cache[word]
+            curWordID = self._word_id_cache[word][0]
+            curWordCount =  self._word_id_cache[word][1] + 1
+            self.update_word(curWordID)
+            self._word_id_cache[word][1] = curWordCount
+            return curWordID
         else:
             word_id = self._next_word_id
             self._next_word_id += 1
             self._lexicon[word_id] = word.encode("utf-8")
-            self._word_id_cache[word] = word_id
-            self.insert_word(word_id)
+            self._word_id_cache[word] = [word_id, 1]
+            self.update_word(word_id)
             return word_id
 
     def document_id(self, url):
@@ -377,6 +379,9 @@ class crawler(object):
     #NOTE: format of inverted index is {wordID: [list of [docID, wordCount]], ...}
     def get_inverted_index(self):
         return self._inverted_index
+
+    def get_dict_of_words(self):
+        return self._word_id_cache
 
     def get_doc_list(self):
         return self._document_list

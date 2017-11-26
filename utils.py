@@ -1,8 +1,6 @@
 import operator
 import redis
 
-databaseIP = "34.226.148.225"
-
 #Normalizes data on a scale of 0 to 100 by finding max and min and adjusting accordingly
 #Can take in a dictionary or a list
 def normalize_data(inputData):
@@ -97,6 +95,23 @@ def add_inverted_index_to_database(invertedIndex):
             for url in invertedIndex[word]:
                 if word[0] != '#': database.zadd(word, url[0], url[1])
             currentWordID += 1
+
+    else:
+        print "Error: cannot add specified data structure to frontend database"
+
+    return
+
+
+def add_alphabetical_words_to_database(word_list):
+    database = redis.Redis("localhost")
+
+    if isinstance(word_list, dict):
+        for word,count in word_list.iteritems():
+            if not isinstance(count, list): continue
+
+            if word[0].isalpha():
+                database.zadd(word[0], word, count[1])
+                #print "Adding word",word[0], "to letter", word[0][0]
 
     else:
         print "Error: cannot add specified data structure to frontend database"
