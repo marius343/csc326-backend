@@ -21,6 +21,7 @@
 import urllib2
 import urlparse
 import pagerank
+import unicodedata
 import redis
 from bs4 import BeautifulSoup, element
 from collections import defaultdict
@@ -61,6 +62,7 @@ class crawler(object):
         self._inverted_index = {} #NOTE: format of inverted index is {wordID: [list of [docID, wordCount]], ...}
         self._lexicon = {}
         self._document_list = {}
+        self._description_list = {}
 
         # functions to call when entering and exiting specific tags
         self._enter = defaultdict(lambda *a, **ka: self._visit_ignore)
@@ -111,7 +113,7 @@ class crawler(object):
             '', 'the', 'of', 'at', 'on', 'in', 'is', 'it',
             'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
             'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
-            'u', 'v', 'w', 'x', 'y', 'z', 'and', 'or',
+            'u', 'v', 'w', 'x', 'y', 'z', 'and', 'or'
         ])
 
         try:
@@ -120,7 +122,7 @@ class crawler(object):
             if len(tempDocID) == 0:
                 self._next_doc_id = 1
             else:
-                self._next_doc_id = tempDocID
+                self._next_doc_id = int(tempDocID[0])
         except:
             print "Error: could not connect to database, using default Doc ID"
             self._next_doc_id = 1
@@ -219,7 +221,8 @@ class crawler(object):
         title_text = self._text_of(elem).strip()
         print "document title=" + repr(title_text)
 
-        # TODO update document title for document id self._curr_doc_id
+        #Converting from uicode to ascii and adding to dictionary containing descriptions for each document
+        self._description_list[self._curr_doc_id] = unicodedata.normalize('NFKD', title_text).encode('ascii','ignore')
 
     def _visit_a(self, elem):
         """Called when visiting <a> tags."""
@@ -377,6 +380,9 @@ class crawler(object):
 
     def get_doc_list(self):
         return self._document_list
+
+    def get_descriptions(self):
+        return self._description_list
 
     def get_raw_page_rank(self):
         if len(self._url_pairs) > 0: self._page_rank = pagerank.page_rank(self._url_pairs)

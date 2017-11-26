@@ -65,8 +65,8 @@ def make_pagerank_pretty(page_rank, doc_list):
 
     return pretty_page_rank
 
-#Adds to backend database. The backend database has DOC_IDs as the keys and the list [URL, page_rank] as the value
-def add_to_backend_database(document_list, page_rank, nextDocID):
+#Adds docs to database, format is '#DocID' as the key and an ordered set of {url:0, pagerank:1, description:2}
+def add_docs_to_database(document_list, page_rank, nextDocID, descriptions):
     database = redis.Redis("localhost")
 
     #Need this to ensure duplicate IDs are not pushed, crawler MUST load this value everytime it runs
@@ -74,8 +74,9 @@ def add_to_backend_database(document_list, page_rank, nextDocID):
 
     if isinstance(document_list, dict) and isinstance(page_rank, dict):
         for doc_id in document_list:
-            database.rpush(doc_id, document_list[doc_id])
-            database.rpush(doc_id, page_rank.get(doc_id, 0))
+            database.zadd('#'+ str(doc_id), document_list[doc_id], 0)
+            database.zadd('#'+ str(doc_id), page_rank.get(doc_id, 0), 1)
+            database.zadd('#' + str(doc_id), descriptions.get(doc_id, ''), 2)
     else:
         print "Error: cannot add specified structures to frontend database"
 
@@ -84,8 +85,8 @@ def add_to_backend_database(document_list, page_rank, nextDocID):
 
 #Adds inverted index to frontend database.
 #Format for database is word:ordered_set(pageID, wordCount)
-def add_to_frontend_database(invertedIndex):
-    database = redis.Redis(databaseIP)
+def add_inverted_index_to_database(invertedIndex):
+    database = redis.Redis("localhost")
 
     indexSize = len(invertedIndex)
     currentWordID = 0
@@ -94,7 +95,7 @@ def add_to_frontend_database(invertedIndex):
         for word in invertedIndex:
             print currentWordID, "/", indexSize
             for url in invertedIndex[word]:
-                database.zadd(word, url[0], url[1])
+                if word[0] != '#': database.zadd(word, url[0], url[1])
             currentWordID += 1
 
     else:
@@ -103,4 +104,4 @@ def add_to_frontend_database(invertedIndex):
     return
 
 if __name__ == "__main__":
-    add_to_frontend_database("blah")
+    add_inverted_index_to_database("blah")

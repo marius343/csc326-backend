@@ -6,6 +6,8 @@ http://www.eecg.toronto.edu/projects.html
 http://www.eecg.toronto.edu/facilities.html
 http://www.eecg.toronto.edu/grads.html
 http://www.eecg.toronto.edu/faculty.html
+http://www.mapquest.com/maps?address=10+King%27s+College+Road&city=Toronto&state=ON&zipcode=M5S+3G4&country=CA
+http://www.mapquest.com/maps/map.adp?countryid=41&addtohistory=&country=CA&address=10+King%27s+College+Road&city=Toronto&state=ON&zipcode=M5S+3G4&submit=Get+Map
 http://www.utoronto.ca
 http://www.ece.utoronto.ca
 http://www.eecg.toronto.edu/Welcome.html
