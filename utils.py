@@ -86,6 +86,8 @@ def add_docs_to_database(document_list, page_rank, nextDocID, descriptions):
 def add_inverted_index_to_database(invertedIndex):
     database = redis.Redis("localhost")
 
+    database.flushall() #REMOVE THIS IN FINAL VERSION
+
     indexSize = len(invertedIndex)
     currentWordID = 0
 
